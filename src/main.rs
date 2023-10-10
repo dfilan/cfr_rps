@@ -17,7 +17,13 @@ fn main() {
     let mut strategy_sum = new_vals();
     let mut regret_sum = new_vals();
 
-    train_strategy(num_iters, &mut strategy_sum, &mut regret_sum, &opp_strategy, &mut rng);
+    train_strategy(
+        num_iters,
+        &mut strategy_sum,
+        &mut regret_sum,
+        &opp_strategy,
+        &mut rng,
+    );
 
     let avg_strategy = get_average_strategy(&strategy_sum);
 
