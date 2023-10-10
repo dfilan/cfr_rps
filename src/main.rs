@@ -50,7 +50,7 @@ fn game_value(my_throw: &RpsThrow, opp_throw: &RpsThrow) -> f64 {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Debug)]
 struct ThrowVals {
     rock: f64,
     paper: f64,
