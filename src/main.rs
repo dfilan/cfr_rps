@@ -1,9 +1,12 @@
+// Code to solve Rock Paper Scissors using Counterfactual Regret Minimization
+// Following "An Introduction to Counterfactual Regret Minimization" by Neller and Lanctot (2013)
+
 use rand::Rng;
 
 // TODO: rewrite to get equilibrium
 
 fn main() {
-    let num_iters = 1_000_000;
+    let num_iters = 1_000_000; // TODO: should be read from command line
     let mut rng = rand::thread_rng();
     let opp_strategy = ThrowVals {
         rock: 0.4,
