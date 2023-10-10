@@ -1,33 +1,38 @@
 // Code to solve Rock Paper Scissors using Counterfactual Regret Minimization
 // Following "An Introduction to Counterfactual Regret Minimization" by Neller and Lanctot (2013)
 
+// TODO: read in num_iters value
+
 use rand::Rng;
 
-// TODO: rewrite to get equilibrium
+// Things I'd change for an actual release:
+// don't put everything in main
+// add documentation
+// add tests
 
 fn main() {
-    let num_iters = 1_000_000; // TODO: should be read from command line
+    let num_iters = 1_000_000;
     let mut rng = rand::thread_rng();
-    let opp_strategy = ThrowVals {
-        rock: 0.4,
-        paper: 0.3,
-        scissors: 0.3,
-    };
 
-    let mut strategy_sum = new_vals();
-    let mut regret_sum = new_vals();
+    let mut my_strategy_sum = new_vals();
+    let mut my_regret_sum = new_vals();
+    let mut opp_strategy_sum = new_vals();
+    let mut opp_regret_sum = new_vals();
 
     train_strategy(
         num_iters,
-        &mut strategy_sum,
-        &mut regret_sum,
-        &opp_strategy,
+        &mut my_strategy_sum,
+        &mut my_regret_sum,
+        &mut opp_strategy_sum,
+        &mut opp_regret_sum,
         &mut rng,
     );
 
-    let avg_strategy = get_average_strategy(&strategy_sum);
+    let my_avg_strategy = get_average_strategy(&my_strategy_sum);
+    println!("My average strategy is {:?}", my_avg_strategy);
 
-    println!("Average strategy is {:?}", avg_strategy);
+    let opp_avg_strategy = get_average_strategy(&opp_strategy_sum);
+    println!("Opp average strategy is {:?}", opp_avg_strategy);
 }
 
 #[derive(Copy, Clone)]
@@ -127,18 +132,20 @@ fn sample_strategy(strategy: &ThrowVals, rng: &mut rand::rngs::ThreadRng) -> Rps
 }
 
 fn get_action_pair(
-    regret_sum: &ThrowVals,
-    strategy_sum: &mut ThrowVals,
-    opp_strategy: &ThrowVals,
+    my_regret_sum: &ThrowVals,
+    my_strategy_sum: &mut ThrowVals,
+    opp_regret_sum: &ThrowVals,
+    opp_strategy_sum: &mut ThrowVals,
     rng: &mut rand::rngs::ThreadRng,
 ) -> (RpsThrow, RpsThrow) {
-    let my_strategy = get_strategy(regret_sum, strategy_sum);
+    let my_strategy = get_strategy(my_regret_sum, my_strategy_sum);
     let my_action = sample_strategy(&my_strategy, rng);
+    let opp_strategy = get_strategy(opp_regret_sum, opp_strategy_sum);
     let opp_action = sample_strategy(&opp_strategy, rng);
     (my_action, opp_action)
 }
 
-fn my_utilities(opp_action: &RpsThrow) -> ThrowVals {
+fn best_response_utilities(opp_action: &RpsThrow) -> ThrowVals {
     let mut utilities = new_vals();
     for throw in THROW_LIST {
         *utilities.write_val(&throw) = game_value(&throw, opp_action);
@@ -146,24 +153,32 @@ fn my_utilities(opp_action: &RpsThrow) -> ThrowVals {
     utilities
 }
 
-fn accumulate_regrets(my_action: &RpsThrow, my_utilities: &ThrowVals, regret_sum: &mut ThrowVals) {
+fn accumulate_regrets(action: &RpsThrow, utilities: &ThrowVals, regret_sum: &mut ThrowVals) {
     for throw in THROW_LIST {
-        *regret_sum.write_val(&throw) +=
-            my_utilities.get_val(&throw) - my_utilities.get_val(my_action);
+        *regret_sum.write_val(&throw) += utilities.get_val(&throw) - utilities.get_val(action);
     }
 }
 
 fn train_strategy(
     num_iters: i32,
-    strategy_sum: &mut ThrowVals,
-    regret_sum: &mut ThrowVals,
-    opp_strategy: &ThrowVals,
+    my_strategy_sum: &mut ThrowVals,
+    my_regret_sum: &mut ThrowVals,
+    opp_strategy_sum: &mut ThrowVals,
+    opp_regret_sum: &mut ThrowVals,
     rng: &mut rand::rngs::ThreadRng,
 ) {
     for _i in 0..num_iters {
-        let (my_action, opp_action) = get_action_pair(regret_sum, strategy_sum, opp_strategy, rng);
-        let my_utils = my_utilities(&opp_action);
-        accumulate_regrets(&my_action, &my_utils, regret_sum);
+        let (my_action, opp_action) = get_action_pair(
+            my_regret_sum,
+            my_strategy_sum,
+            opp_regret_sum,
+            opp_strategy_sum,
+            rng,
+        );
+        let my_utils = best_response_utilities(&opp_action);
+        accumulate_regrets(&my_action, &my_utils, my_regret_sum);
+        let opp_utils = best_response_utilities(&my_action);
+        accumulate_regrets(&opp_action, &opp_utils, opp_regret_sum);
     }
 }
 
