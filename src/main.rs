@@ -1,9 +1,8 @@
 // Code to solve Rock Paper Scissors using Counterfactual Regret Minimization
 // Following "An Introduction to Counterfactual Regret Minimization" by Neller and Lanctot (2013)
 
-// TODO: read in num_iters value
-
 use rand::Rng;
+use std::env;
 
 // Things I'd change for an actual release:
 // don't put everything in main
@@ -11,7 +10,8 @@ use rand::Rng;
 // add tests
 
 fn main() {
-    let num_iters = 1_000_000;
+    let num_iters = read_num_iters();
+
     let mut rng = rand::thread_rng();
 
     let mut my_strategy_sum = new_vals();
@@ -196,4 +196,30 @@ fn get_average_strategy(strategy_sum: &ThrowVals) -> ThrowVals {
         };
     }
     avg_strat
+}
+
+fn read_num_iters() -> i32 {
+    let mut args_iter = env::args();
+    args_iter.next();
+    let num_iters_string: Option<String> = args_iter.next();
+    match num_iters_string {
+        Some(s) => {
+            let num_iters_result = s.parse::<i32>();
+            match num_iters_result {
+                Ok(x) => {
+                    println!("Running with {} iterations", x);
+                    x
+                }
+                Err(e) => {
+                    println!("Parsing input for number of iterations failed: {}", e);
+                    println!("Using default value of 100,000");
+                    100_000
+                }
+            }
+        }
+        None => {
+            println!("No value for number of iterations provided. Using default value of 100,000.");
+            100_000
+        }
+    }
 }
