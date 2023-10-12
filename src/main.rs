@@ -71,7 +71,6 @@ impl ThrowVals {
         }
     }
 
-    // change this to return a mutable reference?
     fn write_val(&mut self, throw: &RpsThrow) -> &mut f64 {
         match throw {
             RpsThrow::Rock => &mut self.rock,
