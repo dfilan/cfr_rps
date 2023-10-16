@@ -14,10 +14,10 @@ fn main() {
 
     let mut rng = rand::thread_rng();
 
-    let mut my_strategy_sum = new_vals();
-    let mut my_regret_sum = new_vals();
-    let mut opp_strategy_sum = new_vals();
-    let mut opp_regret_sum = new_vals();
+    let mut my_strategy_sum = ThrowVals::new();
+    let mut my_regret_sum = ThrowVals::new();
+    let mut opp_strategy_sum = ThrowVals::new();
+    let mut opp_regret_sum = ThrowVals::new();
 
     train_strategy(
         num_iters,
@@ -78,18 +78,18 @@ impl ThrowVals {
             RpsThrow::Scissors => &mut self.scissors,
         }
     }
-}
 
-fn new_vals() -> ThrowVals {
-    ThrowVals {
-        rock: 0.0,
-        paper: 0.0,
-        scissors: 0.0,
+    fn new() -> ThrowVals {
+        ThrowVals {
+            rock: 0.0,
+            paper: 0.0,
+            scissors: 0.0,
+        }
     }
 }
 
 fn get_strategy(regret_sum: &ThrowVals, strategy_sum: &mut ThrowVals) -> ThrowVals {
-    let mut strategy = new_vals();
+    let mut strategy = ThrowVals::new();
     let mut normalizing_sum = 0.0;
 
     for throw in THROW_LIST {
@@ -141,7 +141,7 @@ fn get_action_pair(
 }
 
 fn best_response_utilities(opp_action: &RpsThrow) -> ThrowVals {
-    let mut utilities = new_vals();
+    let mut utilities = ThrowVals::new();
     for throw in THROW_LIST {
         *utilities.write_val(&throw) = game_value(&throw, opp_action);
     }
@@ -178,7 +178,7 @@ fn train_strategy(
 }
 
 fn get_average_strategy(strategy_sum: &ThrowVals) -> ThrowVals {
-    let mut avg_strat = new_vals();
+    let mut avg_strat = ThrowVals::new();
     let mut normalizing_sum = 0.0;
     for throw in THROW_LIST {
         normalizing_sum += strategy_sum.get_val(&throw);
