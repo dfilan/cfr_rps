@@ -89,11 +89,7 @@ fn new_vals() -> ThrowVals {
 }
 
 fn get_strategy(regret_sum: &ThrowVals, strategy_sum: &mut ThrowVals) -> ThrowVals {
-    let mut strategy = ThrowVals {
-        rock: 0.0,
-        paper: 0.0,
-        scissors: 0.0,
-    };
+    let mut strategy = new_vals();
     let mut normalizing_sum = 0.0;
 
     for throw in THROW_LIST {
