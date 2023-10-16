@@ -35,23 +35,55 @@ fn main() {
     println!("Opp average strategy is {:?}", opp_avg_strategy);
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 enum RpsThrow {
     Rock,
     Paper,
     Scissors,
+    Water,
+    Fire,
 }
-const THROW_LIST: [RpsThrow; 3] = [RpsThrow::Rock, RpsThrow::Paper, RpsThrow::Scissors];
+const THROW_LIST: [RpsThrow; 5] = [
+    RpsThrow::Rock,
+    RpsThrow::Paper,
+    RpsThrow::Scissors,
+    RpsThrow::Water,
+    RpsThrow::Fire,
+];
 
 fn game_value(my_throw: &RpsThrow, opp_throw: &RpsThrow) -> f64 {
-    match (my_throw, opp_throw) {
-        (RpsThrow::Rock, RpsThrow::Rock) => 0.0,
-        (RpsThrow::Paper, RpsThrow::Paper) => 0.0,
-        (RpsThrow::Scissors, RpsThrow::Scissors) => 0.0,
-        (RpsThrow::Rock, RpsThrow::Paper) => -1.0,
-        (RpsThrow::Paper, RpsThrow::Scissors) => -1.0,
-        (RpsThrow::Scissors, RpsThrow::Rock) => -1.0,
-        _other => 1.0,
+    let rps_beats_list = [
+        (RpsThrow::Rock, RpsThrow::Scissors),
+        (RpsThrow::Scissors, RpsThrow::Paper),
+        (RpsThrow::Paper, RpsThrow::Rock),
+    ];
+    if *my_throw == *opp_throw {
+        return 0.0;
+    } else if rps_beats_list.contains(&(*my_throw, *opp_throw)) {
+        return 1.0;
+    } else if rps_beats_list.contains(&(*opp_throw, *my_throw)) {
+        return -1.0;
+    } else if *my_throw == RpsThrow::Fire {
+        return if *opp_throw == RpsThrow::Water {
+            -1.0
+        } else {
+            1.0
+        };
+    } else if *my_throw == RpsThrow::Water {
+        return if *opp_throw == RpsThrow::Fire {
+            1.0
+        } else {
+            -1.0
+        };
+    } else if *opp_throw == RpsThrow::Fire {
+        assert!([RpsThrow::Rock, RpsThrow::Paper, RpsThrow::Scissors].contains(&my_throw));
+        return -1.0;
+    } else if *opp_throw == RpsThrow::Water {
+        assert!([RpsThrow::Rock, RpsThrow::Paper, RpsThrow::Scissors].contains(&my_throw));
+        return 1.0;
+    } else {
+        assert!(false, "Previous match should have been exhaustive");
+        return 0.0;
     }
 }
 
@@ -60,6 +92,8 @@ struct ThrowVals {
     rock: f64,
     paper: f64,
     scissors: f64,
+    water: f64,
+    fire: f64,
 }
 
 impl ThrowVals {
@@ -68,6 +102,8 @@ impl ThrowVals {
             RpsThrow::Rock => self.rock,
             RpsThrow::Paper => self.paper,
             RpsThrow::Scissors => self.scissors,
+            RpsThrow::Water => self.water,
+            RpsThrow::Fire => self.fire,
         }
     }
 
@@ -76,6 +112,8 @@ impl ThrowVals {
             RpsThrow::Rock => &mut self.rock,
             RpsThrow::Paper => &mut self.paper,
             RpsThrow::Scissors => &mut self.scissors,
+            RpsThrow::Water => &mut self.water,
+            RpsThrow::Fire => &mut self.fire,
         }
     }
 }
@@ -85,6 +123,8 @@ fn new_vals() -> ThrowVals {
         rock: 0.0,
         paper: 0.0,
         scissors: 0.0,
+        water: 0.0,
+        fire: 0.0,
     }
 }
 
